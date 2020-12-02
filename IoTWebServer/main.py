@@ -49,23 +49,20 @@ def upload_image_file(img):
     return public_url
 
 
-def store_time(email, dt):
-    entity = datastore.Entity(key=datastore_client.key('User', email, 'visit'))
-    entity.update({
-        'timestamp': dt
-    })
+def fetch_device_events(device_id, limit=None):
+    ancestor = datastore_client.key('Device', device_id)
+    query = datastore_client.query(kind='motion_event', ancestor=ancestor)
+    query.order = ['-timestamp', '-url']
 
-    datastore_client.put(entity)
+    events = query.fetch(limit=limit)
+    return events
 
 
-def fetch_times(email, limit):
-    ancestor = datastore_client.key('User', email)
-    query = datastore_client.query(kind='visit', ancestor=ancestor)
-    query.order = ['-timestamp']
-
-    times = query.fetch(limit=limit)
-
-    return times
+def convert_device_id(device_id):
+    """Returns the device's name given the MAC address string"""
+    for i in range(0, len(config.AUTHORIZED_DEVICES)):
+        if config.AUTHORIZED_DEVICES[i] == device_id:
+            return config.AUTHORIZED_DEVICE_NAMES[i]
 
 
 @app.route('/notify', methods=['POST'])
@@ -105,13 +102,32 @@ def test():
     return jsonify({'Success': 'Image uploaded to ' + url}), 200
 
 
+def store_time(dt):
+    entity = datastore.Entity(key=datastore_client.key('visit'))
+    entity.update({
+        'timestamp': dt
+    })
+
+    datastore_client.put(entity)
+
+
+def fetch_times(limit):
+    query = datastore_client.query(kind='visit')
+    query.order = ['-timestamp']
+
+    times = query.fetch(limit=limit)
+
+    return times
+
+
 @app.route('/')
 def root():
     # Verify Firebase auth.
     id_token = request.cookies.get("token")
     error_message = None
     claims = None
-    urls = None
+    times = None
+    packed = None
 
     if id_token:
         try:
@@ -122,18 +138,29 @@ def root():
             # http://flask.pocoo.org/docs/1.0/quickstart/#sessions).
             claims = google.oauth2.id_token.verify_firebase_token(
                 id_token, firebase_request_adapter)
-
-            if claims['email'] not in config.AUTHORIZED_USERS:
-                return '', 403
-
         except ValueError as exc:
             # This will be raised if the token is expired or any other
             # verification checks fail.
             error_message = str(exc)
 
+        # Record and fetch the recent times a logged-in user has accessed
+        # the site. This is currently shared amongst all users, but will be
+        # individualized in a following step.
+        # store_time(datetime.datetime.now())
+        # times = fetch_times(10)
+        event_dict = {}
+        devices = []
+        photos = []
+        timestamps = []
+        for device in config.AUTHORIZED_DEVICES:
+            for event in fetch_device_events(device, 5):
+                devices.append(convert_device_id(device))
+                photos.append(event['url'])
+                timestamps.append(event['timestamp'])
+        packed = zip(devices, photos, timestamps)
     return render_template(
         'index.html',
-        user_data=claims, error_message=error_message, urls=urls)
+        user_data=claims, error_message=error_message, packed=packed)
 
 
 if __name__ == '__main__':

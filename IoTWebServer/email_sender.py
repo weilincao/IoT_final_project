@@ -25,9 +25,9 @@ def send_emails(sensor_str, img_url):
     # img = result['photo']
     # img = b64encode(img).decode("utf-8")
     # html_content += '<img src="data:;base64,' + img + '" height="128" width="128"/><br><br>'
-    for email in email_list:
+    for e in email_list:
         message = Mail(from_email=email_from,
-                       to_emails=To(email),
+                       to_emails=To(e),
                        subject=email_subject,
                        html_content=email_body)
         try:

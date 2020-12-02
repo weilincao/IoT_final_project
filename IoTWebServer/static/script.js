@@ -12,33 +12,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
-// [START gae_python38_log]
+
 'use strict';
 
 window.addEventListener('load', function () {
+  
+  // [START gae_python38_auth_signout]
   document.getElementById('sign-out').onclick = function () {
     firebase.auth().signOut();
   };
+  // [END gae_python38_auth_signout]
 
+  // [START gae_python38_auth_UIconfig_variable]
   // FirebaseUI config.
   var uiConfig = {
     signInSuccessUrl: '/',
     signInOptions: [
-      // Comment out any lines corresponding to providers you did not check in
+      // Remove any lines corresponding to providers you did not check in
       // the Firebase console.
       firebase.auth.GoogleAuthProvider.PROVIDER_ID,
       firebase.auth.EmailAuthProvider.PROVIDER_ID,
-      //firebase.auth.FacebookAuthProvider.PROVIDER_ID,
-      //firebase.auth.TwitterAuthProvider.PROVIDER_ID,
-      //firebase.auth.GithubAuthProvider.PROVIDER_ID,
-      //firebase.auth.PhoneAuthProvider.PROVIDER_ID
-
     ],
     // Terms of service url.
     tosUrl: '<your-tos-url>'
   };
+  // [END gae_python38_auth_UIconfig_variable]
 
+  // [START gae_python38_auth_request]
   firebase.auth().onAuthStateChanged(function (user) {
     if (user) {
       // User is signed in, so display the "sign out" button and login info.
@@ -69,5 +69,5 @@ window.addEventListener('load', function () {
     console.log(error);
     alert('Unable to log in: ' + error)
   });
+  // [END gae_python38_auth_request]
 });
-// [END gae_python38_log]
