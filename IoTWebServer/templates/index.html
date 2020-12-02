@@ -39,8 +39,8 @@
 <button id="sign-out" hidden=true>Sign Out</button>
 
 <div id="login-info" hidden=true>
+  {% if user_data and authorized %}
   <h2>Recent Events:</h2>
-  {% if user_data %}
     <dl>
       <dd>
 	    {% for device, photo, timestamp in packed %}

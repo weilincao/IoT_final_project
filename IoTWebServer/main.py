@@ -128,6 +128,7 @@ def root():
     claims = None
     times = None
     packed = None
+    authorized = False
 
     if id_token:
         try:
@@ -148,7 +149,10 @@ def root():
         # individualized in a following step.
         # store_time(datetime.datetime.now())
         # times = fetch_times(10)
-        event_dict = {}
+        if claims['email'] in config.AUTHORIZED_USERS:
+            authorized = True
+        else:
+            error_message = 'You are not authorized to view this page. Please log in with an authorized email account.'
         devices = []
         photos = []
         timestamps = []
@@ -160,7 +164,7 @@ def root():
         packed = zip(devices, photos, timestamps)
     return render_template(
         'index.html',
-        user_data=claims, error_message=error_message, packed=packed)
+        user_data=claims, error_message=error_message, packed=packed, authorized=authorized)
 
 
 if __name__ == '__main__':
