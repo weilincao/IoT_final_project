@@ -68,7 +68,6 @@ def convert_device_id(device_id):
 @app.route('/notify', methods=['POST'])
 def notify():
     """Emails all authorized users when motion has been detected"""
-    print('Notification is starting!!!!!!!')
     print(request.get_data())
     sensor_str = request.form.get('macAddr')
     print('MAC Address received: ' + sensor_str)
@@ -76,6 +75,21 @@ def notify():
     url = None
     if img is not None:
         url = upload_image_file(img)
+
+    # Check to see if the device has a datastore entry for its name
+    ancestor = datastore_client.key('Device', sensor_str)
+    query = datastore_client.query(kind='device', ancestor=ancestor)
+    devices = [] if query.keys_only() is None else query.keys_only()
+    new_device = True
+    for key in devices:
+        if key.name == sensor_str:
+            new_device = False
+    if new_device:  # Adds the device to the datastore if it isn't in there already
+        entity = datastore.Entity(key=datastore_client.key('Device', sensor_str, 'device'))
+        entity.update({
+            'name': sensor_str
+        })
+        datastore_client.put(entity)
 
     # Create and place a datastore entry in the cloud datastore
     entity = datastore.Entity(key=datastore_client.key('Device', sensor_str, 'motion_event'))
@@ -149,7 +163,9 @@ def root():
         # individualized in a following step.
         # store_time(datetime.datetime.now())
         # times = fetch_times(10)
-        if claims['email'] in config.AUTHORIZED_USERS:
+        if claims is None:
+            error_message = error_message
+        elif claims['email'] in config.AUTHORIZED_USERS:
             authorized = True
         else:
             error_message = 'You are not authorized to view this page. Please log in with an authorized email account.'
@@ -160,7 +176,7 @@ def root():
             for event in fetch_device_events(device, 5):
                 devices.append(convert_device_id(device))
                 photos.append(event['url'])
-                timestamps.append(event['timestamp'])
+                timestamps.append(event['timestamp'].ctime())
         packed = zip(devices, photos, timestamps)
     return render_template(
         'index.html',

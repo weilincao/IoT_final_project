@@ -7,3 +7,9 @@ indexes:
       direction: desc
     - name: url
       direction: desc
+
+- kind: device
+  ancestor: yes
+  properties:
+    - name: name
+      direction: desc
