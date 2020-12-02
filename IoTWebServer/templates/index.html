@@ -27,7 +27,53 @@
   <!-- [END gae_python38_auth_include_firebaseui] -->
   <script src="{{ url_for('static', filename='script.js') }}"></script>
   <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    h1{
+      text-align: center;
+      color:white;
+      background-color: #cc6600;
+    }
+    img{
+      display: block;
+      object-fit: cover;
+      max-width: 100%;
+      max-height: 90%;
+    }
 
+    .grid-item:hover {
+    transition-duration: .7s;
+    transform: scale(2); /* (150% zoom - Note: if the zoom is too large, it will go outside of the viewport) */
+    }
+    body{
+      background-color: #f7c28d;
+    }
+    #firebaseui-auth-container{
+      background-color: white;
+    }
+    #sign-out{
+      position: absolute;
+      top: 10%;
+      right: 5%;
+      background-color: white
+    }
+
+    .grid-container{
+      display: grid;
+      width: 90%;
+      height: 100%;
+      grid-template-columns: auto auto auto auto auto;
+      grid-gap: 2vw;
+
+    }
+
+    .grid-item{
+      padding: 20px;
+      text-align: center;
+      padding: 20px 20px;
+      background: #ffa64d;
+    }
+
+  </style>
 </head>
 <body>
 
@@ -36,18 +82,21 @@
 <!-- [START gae_python38_auth_firebase_html] -->
 <div id="firebaseui-auth-container"></div>
 
-<button id="sign-out" hidden=true>Sign Out</button>
+<button id="sign-out"hidden=true>Sign Out</button>
 
 <div id="login-info" hidden=true>
-  <h2>Recent Events:</h2>
+  <h2 style="color:#a33f0a;">Recent Events:</h2>
   {% if user_data %}
-    <dl>
-      <dd>
+    <div class="grid-container">
+      
 	    {% for device, photo, timestamp in packed %}
-          <p>Device:{{ device }} took this at time {{ timestamp }}</p>
-          <img src="{{ photo }}" height="512" width="512"/>
-        {% endfor %} </dd>
-    </dl>
+        <div class="grid-item">
+          Device:&nbsp{{ device }}<br>At:&nbsp{{ timestamp }}
+          <a href="{{ photo }}"><img src="{{ photo }}"/></a>
+        </div>
+      {% endfor %}
+      
+    </div>
   {% elif error_message %}
     <p>Error: {{ error_message }}</p>
   {% endif %}
