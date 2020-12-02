@@ -85,6 +85,8 @@ def notify():
         devices = [] if query.keys_only() is None else query.keys_only()
         new_device = True
         for key in devices:
+            print('Key name: ' + key.name)
+            print('Key namespace: ' + key.namespace)
             if key.name == sensor_str:
                 new_device = False
         if new_device:  # Adds the device to the datastore if it isn't in there already
