@@ -82,13 +82,12 @@ def notify():
         # Check to see if the device has a datastore entry for its name
         ancestor = datastore_client.key('Device', sensor_str)
         query = datastore_client.query(kind='device', ancestor=ancestor)
-        devices = [] if query.keys_only() is None else query.keys_only()
-        new_device = True
-        for key in devices:
-            print('Key name: ' + key.name)
-            print('Key namespace: ' + key.namespace)
-            if key.name == sensor_str:
-                new_device = False
+        query.order = ['-name']
+        devices = query.fetch()
+        i = 0
+        for device in devices:
+            i += 1
+        new_device = True if i == 0 else False
         if new_device:  # Adds the device to the datastore if it isn't in there already
             entity = datastore.Entity(key=datastore_client.key('Device', sensor_str, 'device'))
             entity.update({
