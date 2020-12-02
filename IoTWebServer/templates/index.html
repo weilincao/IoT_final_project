@@ -85,10 +85,10 @@
 <button id="sign-out"hidden=true>Sign Out</button>
 
 <div id="login-info" hidden=true>
+
+  {% if user_data and authorized %}
   <h2 style="color:#a33f0a;">Recent Events:</h2>
-  {% if user_data %}
-    <div class="grid-container">
-      
+  <div class="grid-container">
 	    {% for device, photo, timestamp in packed %}
         <div class="grid-item">
           Device:&nbsp{{ device }}<br>At:&nbsp{{ timestamp }}
@@ -96,7 +96,7 @@
         </div>
       {% endfor %}
       
-    </div>
+  </div>
   {% elif error_message %}
     <p>Error: {{ error_message }}</p>
   {% endif %}
