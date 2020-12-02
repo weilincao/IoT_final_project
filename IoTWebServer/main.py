@@ -70,39 +70,44 @@ def notify():
     """Emails all authorized users when motion has been detected"""
     print(request.get_data())
     sensor_str = request.form.get('macAddr')
-    print('MAC Address received: ' + sensor_str)
-    img = request.files['photo']
-    url = None
-    if img is not None:
-        url = upload_image_file(img)
+    local_url = request.form.get('LocalIP')
+    img = request.files.get('photo')
 
-    # Check to see if the device has a datastore entry for its name
-    ancestor = datastore_client.key('Device', sensor_str)
-    query = datastore_client.query(kind='device', ancestor=ancestor)
-    devices = [] if query.keys_only() is None else query.keys_only()
-    new_device = True
-    for key in devices:
-        if key.name == sensor_str:
-            new_device = False
-    if new_device:  # Adds the device to the datastore if it isn't in there already
-        entity = datastore.Entity(key=datastore_client.key('Device', sensor_str, 'device'))
+    if img is not None and sensor_str is not None and local_url is not None:
+        print('Local IP received: ' + local_url)
+        print('MAC Address received: ' + sensor_str)
+        url = upload_image_file(img)
+        print('Image uploaded to: ' + url if url is not None else 'UPLOAD FAILED')
+
+        # Check to see if the device has a datastore entry for its name
+        ancestor = datastore_client.key('Device', sensor_str)
+        query = datastore_client.query(kind='device', ancestor=ancestor)
+        devices = [] if query.keys_only() is None else query.keys_only()
+        new_device = True
+        for key in devices:
+            if key.name == sensor_str:
+                new_device = False
+        if new_device:  # Adds the device to the datastore if it isn't in there already
+            entity = datastore.Entity(key=datastore_client.key('Device', sensor_str, 'device'))
+            entity.update({
+                'name': sensor_str
+            })
+            datastore_client.put(entity)
+
+        # Create and place a datastore entry in the cloud datastore
+        entity = datastore.Entity(key=datastore_client.key('Device', sensor_str, 'motion_event'))
+        timestamp = datetime.datetime.now()
         entity.update({
-            'name': sensor_str
+            'timestamp': timestamp,
+            'url': url
         })
         datastore_client.put(entity)
 
-    # Create and place a datastore entry in the cloud datastore
-    entity = datastore.Entity(key=datastore_client.key('Device', sensor_str, 'motion_event'))
-    timestamp = datetime.datetime.now()
-    entity.update({
-        'timestamp': timestamp,
-        'url': url
-    })
-    datastore_client.put(entity)
+        email_sender.send_emails(sensor_str, url, local_url)
 
-    email_sender.send_emails(sensor_str, url)
-
-    return jsonify({'Success': 'Image uploaded to ' + url}), 200
+        return jsonify({'Success': 'Image uploaded to ' + url}), 200
+    else:
+        return jsonify({'Error': 'Image not uploaded '}), 400
 
 
 @app.route('/test', methods=['POST'])
@@ -116,31 +121,12 @@ def test():
     return jsonify({'Success': 'Image uploaded to ' + url}), 200
 
 
-def store_time(dt):
-    entity = datastore.Entity(key=datastore_client.key('visit'))
-    entity.update({
-        'timestamp': dt
-    })
-
-    datastore_client.put(entity)
-
-
-def fetch_times(limit):
-    query = datastore_client.query(kind='visit')
-    query.order = ['-timestamp']
-
-    times = query.fetch(limit=limit)
-
-    return times
-
-
 @app.route('/')
 def root():
     # Verify Firebase auth.
     id_token = request.cookies.get("token")
     error_message = None
     claims = None
-    times = None
     packed = None
     authorized = False
 
@@ -158,11 +144,6 @@ def root():
             # verification checks fail.
             error_message = str(exc)
 
-        # Record and fetch the recent times a logged-in user has accessed
-        # the site. This is currently shared amongst all users, but will be
-        # individualized in a following step.
-        # store_time(datetime.datetime.now())
-        # times = fetch_times(10)
         if claims is None:
             error_message = error_message
         elif claims['email'] in config.AUTHORIZED_USERS:
@@ -172,7 +153,7 @@ def root():
         devices = []
         photos = []
         timestamps = []
-        for device in config.AUTHORIZED_DEVICES:
+        for device in config.AUTHORIZED_DEVICES:  # Fetches the 5 most recent events per device to display
             for event in fetch_device_events(device, 5):
                 devices.append(convert_device_id(device))
                 photos.append(event['url'])

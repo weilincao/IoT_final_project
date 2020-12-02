@@ -33,24 +33,28 @@
       color:white;
       background-color: #cc6600;
     }
+    h2{
+      text-align: left;
+    }
     img{
       display: block;
       object-fit: cover;
       max-width: 100%;
       max-height: 90%;
+      margin: auto;
     }
 
     .grid-item:hover {
     transition-duration: .7s;
-    transform: scale(2); /* (150% zoom - Note: if the zoom is too large, it will go outside of the viewport) */
+    transform: scale(1.5); /* (150% zoom - Note: if the zoom is too large, it will go outside of the viewport) */
     }
     body{
       background-color: #f7c28d;
     }
     #sign-out{
       position: absolute;
-      top: 10%;
-      right: 5%;
+      top: 6.75vmin;
+      right: 3vmin;
       background-color: white
     }
 
@@ -60,7 +64,7 @@
       height: 100%;
       grid-template-columns: repeat(5, 1fr);
       grid-gap: 2vw;
-
+      padding-left: 5%;
     }
 
     .grid-item{

@@ -4,7 +4,7 @@ import datetime
 import config
 
 
-def send_emails(sensor_str, img_url):
+def send_emails(sensor_str, img_url, local_url):
     email_list = config.AUTHORIZED_USERS
     sg = sendgrid.SendGridAPIClient(api_key=config.SENDGRID_API_KEY)
     email_from = Email('iothomesecure297007@gmail.com')
@@ -21,7 +21,8 @@ def send_emails(sensor_str, img_url):
             break
 
     email_body = '<h1>Sensor ' + sensor_str + ' detected motion! </h1>'
-    email_body += '<img src=\"' + img_url + '\"/>'
+    email_body += '<img src=\"' + img_url + '\"/><br><br>'
+    email_body += '<a href=\"' + local_url + '\">If you are home, view the video stream here!</a>'
     # img = result['photo']
     # img = b64encode(img).decode("utf-8")
     # html_content += '<img src="data:;base64,' + img + '" height="128" width="128"/><br><br>'
