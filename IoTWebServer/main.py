@@ -20,7 +20,7 @@ from google.auth.transport import requests
 from google.cloud import datastore
 import google.oauth2.id_token
 import storage
-import email
+import email_sender
 import config
 
 app = Flask(__name__)
@@ -71,13 +71,22 @@ def fetch_times(email, limit):
 @app.route('/notify', methods=['POST'])
 def notify():
     """Emails all authorized users when motion has been detected"""
-    sensor_str = request.id
+    sensor_str = request.macAddr
     img = request.files['photo']
     url = None
     if img is not None:
         url = upload_image_file(img)
 
-    email.send_emails(sensor_str, url)
+    # Create and place a datastore entry in the cloud datastore
+    entity = datastore.Entity(key=datastore_client.key('Device', sensor_str, 'motion_event'))
+    timestamp = datetime.datetime.now()
+    entity.update({
+        'timestamp': timestamp,
+        'url': url
+    })
+    datastore_client.put(entity)
+
+    email_sender.send_emails(sensor_str, url)
 
     return jsonify({'Success': 'Image uploaded to ' + url}), 200
 

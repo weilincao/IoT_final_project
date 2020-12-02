@@ -3,6 +3,7 @@ indexes:
 - kind: motion_event
   ancestor: yes
   properties:
-  - name: timestamp
-    direction: desc
-  - name: url
+    - name: timestamp
+      direction: desc
+    - name: url
+      direction: desc
