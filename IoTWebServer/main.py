@@ -71,7 +71,10 @@ def fetch_times(email, limit):
 @app.route('/notify', methods=['POST'])
 def notify():
     """Emails all authorized users when motion has been detected"""
-    sensor_str = request.macAddr
+    print('Notification is starting!!!!!!!')
+    print(request.get_data())
+    sensor_str = request.form.get('macAddr')
+    print('MAC Address received: ' + sensor_str)
     img = request.files['photo']
     url = None
     if img is not None:
@@ -108,7 +111,7 @@ def root():
     id_token = request.cookies.get("token")
     error_message = None
     claims = None
-    times = None
+    urls = None
 
     if id_token:
         try:
@@ -120,8 +123,8 @@ def root():
             claims = google.oauth2.id_token.verify_firebase_token(
                 id_token, firebase_request_adapter)
 
-            store_time(claims['email'], datetime.datetime.now())
-            times = fetch_times(claims['email'], 10)
+            if claims['email'] not in config.AUTHORIZED_USERS:
+                return '', 403
 
         except ValueError as exc:
             # This will be raised if the token is expired or any other
@@ -130,7 +133,7 @@ def root():
 
     return render_template(
         'index.html',
-        user_data=claims, error_message=error_message, times=times)
+        user_data=claims, error_message=error_message, urls=urls)
 
 
 if __name__ == '__main__':
