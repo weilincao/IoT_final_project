@@ -92,7 +92,7 @@
   <div class="grid-container">
 	    {% for device, photo, timestamp in packed %}
         <div class="grid-item">
-          Device:&nbsp{{ device }}<br>At:&nbsp{{ timestamp }}
+          Device:&nbsp{{ device }}<br>At:&nbsp{{ timestamp }} UTC
           <a href="{{ photo }}"><img src="{{ photo }}"/></a>
         </div>
       {% endfor %}

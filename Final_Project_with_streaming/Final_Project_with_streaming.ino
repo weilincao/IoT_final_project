@@ -101,7 +101,7 @@ void setup() {
     s->set_saturation(s, -2);//lower the saturation
   }
   //drop down frame size for higher initial frame rate
-  s->set_framesize(s, FRAMESIZE_QVGA);
+  s->set_framesize(s, FRAMESIZE_VGA);
 
 #if defined(CAMERA_MODEL_M5STACK_WIDE)
   s->set_vflip(s, 1);
@@ -144,8 +144,6 @@ String sendPhoto() {
   String getBody;
 
   camera_fb_t * fb = NULL;
-  sensor_t * s = esp_camera_sensor_get();
-  s->set_framesize(s, FRAMESIZE_SXGA);
   fb = esp_camera_fb_get();
   if(!fb) {
     Serial.println("Camera capture failed");
