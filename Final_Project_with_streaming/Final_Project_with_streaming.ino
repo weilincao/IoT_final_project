@@ -145,7 +145,8 @@ String sendPhoto() {
 
   camera_fb_t * fb = NULL;
   sensor_t * s = esp_camera_sensor_get();
-  s->set_framesize(s, FRAMESIZE_SXGA);
+  s->set_framesize(s, FRAMESIZE_XGA);
+  delay(1000);
   fb = esp_camera_fb_get();
   if(!fb) {
     Serial.println("Camera capture failed");
