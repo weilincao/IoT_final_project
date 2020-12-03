@@ -19,8 +19,8 @@
 
 #include "camera_pins.h"
 
-const char* ssid = "KOVATCH";
-const char* password = "tk12trd147298";
+const char* ssid = "ATT2Ynw2Nj_EXT";
+const char* password = "8wd89jk3p64k";
 
 String serverName = "iot-home-security-297007.uc.r.appspot.com";   // OR REPLACE WITH YOUR DOMAIN NAME
 
